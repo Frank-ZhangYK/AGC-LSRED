@@ -82,7 +82,8 @@ class SNGenLoss(torch.nn.Module):
         self.weight = weight
 
     def forward(self, out_image,gt_image):
-        loss = ((self.weight * (out_image - gt_image)) ** 2).mean()
+        #loss = ((self.weight * (out_image - gt_image)) ** 2).mean()
+        loss = - self.weight * torch.mean(neg)
         return loss
 
 
