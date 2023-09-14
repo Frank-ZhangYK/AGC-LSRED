@@ -65,7 +65,6 @@ class SNDisLoss(torch.nn.Module):
         self.weight = weight    
 
     def forward(self, pos, neg, out_image, org_image):
-        #return self.weight*(torch.mean(torch.pow(pos - neg, 2)) + self.weight*torch.mean(torch.pow(out_image - org_image, 2)))
         return -torch.mean(pos) + torch.mean(neg)
     
     
@@ -82,7 +81,6 @@ class SNGenLoss(torch.nn.Module):
         self.weight = weight
 
     def forward(self, out_image,gt_image):
-        #loss = ((self.weight * (out_image - gt_image)) ** 2).mean()
         loss = - self.weight * torch.mean(neg)
         return loss
 
