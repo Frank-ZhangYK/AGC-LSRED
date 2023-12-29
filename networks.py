@@ -72,23 +72,23 @@ class AGCBlock(nn.Module):
         self.k = k
         self.padding = padding
         self.inplanes = inplanes
-        self.unfold = torch.nn.Unfold(self.k, 1, self.padding, self.stride) # [N,c*k*k,l]
+        self.unfold = torch.nn.Unfold(self.k, 1, self.padding, self.stride) 
         self.fold = torch.nn.Fold(output_size=(image_size, image_size), kernel_size=(self.k,self.k),
-                                  dilation=1, padding=0, stride=self.stride) # [N,c*k*k,l]
+                                  dilation=1, padding=0, stride=self.stride) 
         self.GC = nn.Sequential(Sa_GC(inplanes=self.inplanes, ratio=0.5, pooling_type='att', fusion_types=('channel_add'))) 
 
-    def forward(self, x): # x: [N,C,H,W] 
+    def forward(self, x): 
         # [N, C, 1, 1]
         batch, channel, height, width = x.shape
         
         
         x_split = x
-        x_split_unfold = self.unfold(x_split).transpose(2,1).contiguous() #[N,l,c*k*k]
+        x_split_unfold = self.unfold(x_split).contiguous()
         batch_unfold, number_unfold, patchsize_unfold = x_split_unfold.size()
-        x_split_unfold =  x_split_unfold.view(-1, channel, self.k, self.k) #[N*l,c,k,k]
-        x_split_unfold_gc = self.GC(x_split_unfold) #[N*l,c,k,k]
-        x_split_unfold_gc = x_split_unfold_gc.view(batch_unfold, number_unfold, patchsize_unfold) #[N,l,c*k*k]
-        x_split_unfold_gc = x_split_unfold_gc.transpose(2,1).contiguous() # [N,c*k*k,l]
+        x_split_unfold =  x_split_unfold.view(-1, channel, self.k, self.k)
+        x_split_unfold_gc = self.GC(x_split_unfold) 
+        x_split_unfold_gc = x_split_unfold_gc.view(batch_unfold, patchsize_unfold)
+        x_split_unfold_gc = x_split_unfold_gc.transpose(2,1).contiguous() 
         x_split_fold_gc = self.fold(x_split_unfold_gc)
         
         ones = torch.ones((batch, channel, height, width)).cuda()
